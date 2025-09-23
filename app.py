@@ -107,3 +107,17 @@ def calcular_estatisticas():
     except Exception as e:
         logger.error(f"Erro ao calcular estatísticas: {e}")
         return None
+    
+@app.route('/')
+def index():
+    """Página inicial demonstrando USABILIDADE"""
+    try:
+        estatisticas = calcular_estatisticas()
+        livros_recentes = Livro.query.order_by(Livro.data_cadastro.desc()).limit(5).all()
+        return render_template('index.html', 
+                             estatisticas=estatisticas, 
+                             livros_recentes=livros_recentes)
+    except Exception as e:
+        logger.error(f"Erro na página inicial: {e}")
+        flash('Erro ao carregar dados da página inicial', 'error')
+        return render_template('index.html', estatisticas=None, livros_recentes=[])
