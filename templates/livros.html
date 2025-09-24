@@ -10,3 +10,43 @@
         </h1>
     </div>
 </div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="busca" class="form-label">Buscar</label>
+                        <input type="text" class="form-control" id="busca" name="busca" 
+                               value="{{ busca }}" placeholder="Título, autor ou ISBN">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="categoria" class="form-label">Categoria</label>
+                        <select class="form-select" id="categoria" name="categoria">
+                            <option value="">Todas as categorias</option>
+                            {% for cat in categorias %}
+                            <option value="{{ cat }}" {{ 'selected' if cat == categoria_selecionada else '' }}>
+                                {{ cat }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                        <a href="{{ url_for('listar_livros') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Limpar
+                        </a>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <a href="{{ url_for('adicionar_livro') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Adicionar Livro
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

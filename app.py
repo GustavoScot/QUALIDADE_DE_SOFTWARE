@@ -121,3 +121,90 @@ def index():
         logger.error(f"Erro na página inicial: {e}")
         flash('Erro ao carregar dados da página inicial', 'error')
         return render_template('index.html', estatisticas=None, livros_recentes=[])
+    
+@app.route('/livros')
+def listar_livros():
+    """Lista todos os livros com funcionalidade de busca"""
+    try:
+        pagina = request.args.get('pagina', 1, type=int)
+        busca = request.args.get('busca', '')
+        categoria = request.args.get('categoria', '')
+        
+        query = Livro.query
+        
+        if busca:
+            query = query.filter(
+                db.or_(
+                    Livro.titulo.contains(busca),
+                    Livro.autor.contains(busca),
+                    Livro.isbn.contains(busca)
+                )
+            )
+        
+        if categoria:
+            query = query.filter(Livro.categoria == categoria)
+        
+        livros = query.paginate(
+            page=pagina, per_page=10, error_out=False
+        )
+        
+        categorias = db.session.query(Livro.categoria).distinct().all()
+        categorias = [cat[0] for cat in categorias]
+        
+        return render_template('livros.html', 
+                             livros=livros, 
+                             categorias=categorias,
+                             busca=busca,
+                             categoria_selecionada=categoria)
+    except Exception as e:
+        logger.error(f"Erro ao listar livros: {e}")
+        flash('Erro ao carregar lista de livros', 'error')
+        return redirect(url_for('index'))
+
+@app.route('/livros/adicionar', methods=['GET', 'POST'])
+def adicionar_livro():
+    """Adiciona um novo livro - FUNCIONALIDADE 1"""
+    if request.method == 'POST':
+        try:
+            titulo = request.form['titulo'].strip()
+            autor = request.form['autor'].strip()
+            isbn = request.form['isbn'].strip()
+            ano = request.form['ano']
+            categoria = request.form['categoria'].strip()
+            quantidade = int(request.form.get('quantidade', 1))
+            
+            erros = validar_dados_livro(titulo, autor, isbn, ano, categoria)
+            
+            if erros:
+                for erro in erros:
+                    flash(erro, 'error')
+                return render_template('adicionar_livro.html')
+            
+            if Livro.query.filter_by(isbn=isbn).first():
+                flash('ISBN já cadastrado no sistema', 'error')
+                return render_template('adicionar_livro.html')
+            
+            novo_livro = Livro(
+                titulo=titulo,
+                autor=autor,
+                isbn=isbn,
+                ano_publicacao=int(ano),
+                categoria=categoria,
+                quantidade_total=quantidade,
+                quantidade_disponivel=quantidade
+            )
+            
+            db.session.add(novo_livro)
+            db.session.commit()
+            
+            logger.info(f"Livro adicionado: {titulo} - {autor}")
+            flash('Livro adicionado com sucesso!', 'success')
+            return redirect(url_for('listar_livros'))
+            
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Erro ao adicionar livro: {e}")
+            flash('Erro ao adicionar livro', 'error')
+            return render_template('adicionar_livro.html')
+    
+    return render_template('adicionar_livro.html')
