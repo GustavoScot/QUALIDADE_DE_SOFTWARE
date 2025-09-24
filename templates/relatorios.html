@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Relatórios - Sistema de Biblioteca{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-chart-bar"></i> Relatórios e Estatísticas
+        </h1>
+    </div>
+</div>
+
+{% if estatisticas %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="mb-3">Estatísticas Gerais</h2>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card">
+            <div class="card-body text-center">
+                <i class="fas fa-book fa-2x mb-2"></i>
+                <div class="stats-number">{{ estatisticas.total_livros }}</div>
+                <div>Total de Livros</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <div class="stats-number">{{ estatisticas.total_usuarios }}</div>
+                <div>Usuários Cadastrados</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card">
+            <div class="card-body text-center">
+                <i class="fas fa-exchange-alt fa-2x mb-2"></i>
+                <div class="stats-number">{{ estatisticas.emprestimos_ativos }}</div>
+                <div>Empréstimos Ativos</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                <div class="stats-number">{{ estatisticas.emprestimos_atrasados }}</div>
+                <div>Empréstimos Atrasados</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
