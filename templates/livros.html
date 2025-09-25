@@ -50,3 +50,140 @@
         </div>
     </div>
 </div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list"></i> 
+                    Lista de Livros 
+                    {% if busca or categoria_selecionada %}
+                        <small class="text-muted">
+                            (Filtros aplicados{% if busca %}: "{{ busca }}"{% endif %}{% if categoria_selecionada %}, categoria: {{ categoria_selecionada }}{% endif %})
+                        </small>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if livros.items %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Título</th>
+                                <th>Autor</th>
+                                <th>ISBN</th>
+                                <th>Ano</th>
+                                <th>Categoria</th>
+                                <th>Disponibilidade</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for livro in livros.items %}
+                            <tr>
+                                <td>
+                                    <strong>{{ livro.titulo }}</strong>
+                                </td>
+                                <td>{{ livro.autor }}</td>
+                                <td>
+                                    <code>{{ livro.isbn }}</code>
+                                </td>
+                                <td>{{ livro.ano_publicacao }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ livro.categoria }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if livro.quantidade_disponivel > 0 else 'danger' }}">
+                                        {{ livro.quantidade_disponivel }}/{{ livro.quantidade_total }}
+                                    </span>
+                                    {% if livro.quantidade_disponivel > 0 %}
+                                        <small class="text-success d-block">Disponível</small>
+                                    {% else %}
+                                        <small class="text-danger d-block">Indisponível</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('novo_emprestimo') }}?livro_id={{ livro.id }}" 
+                                           class="btn btn-sm btn-primary" 
+                                           {{ 'disabled' if livro.quantidade_disponivel <= 0 else '' }}
+                                           title="Emprestar">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginação -->
+                {% if livros.pages > 1 %}
+                <nav aria-label="Navegação de páginas">
+                    <ul class="pagination justify-content-center">
+                        {% if livros.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('listar_livros', 
+                                pagina=livros.prev_num, busca=busca, categoria=categoria_selecionada) }}">
+                                Anterior
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page_num in livros.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != livros.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('listar_livros', 
+                                        pagina=page_num, busca=busca, categoria=categoria_selecionada) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if livros.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('listar_livros', 
+                                pagina=livros.next_num, busca=busca, categoria=categoria_selecionada) }}">
+                                Próximo
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhum livro encontrado</h5>
+                    <p class="text-muted">
+                        {% if busca or categoria_selecionada %}
+                            Tente ajustar os filtros de busca ou 
+                            <a href="{{ url_for('listar_livros') }}">limpar os filtros</a>.
+                        {% else %}
+                            <a href="{{ url_for('adicionar_livro') }}" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Adicionar o primeiro livro
+                            </a>
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

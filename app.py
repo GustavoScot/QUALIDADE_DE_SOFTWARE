@@ -208,3 +208,58 @@ def adicionar_livro():
             return render_template('adicionar_livro.html')
     
     return render_template('adicionar_livro.html')
+
+@app.route('/usuarios')
+def listar_usuarios():
+    """Lista todos os usuários"""
+    try:
+        usuarios = Usuario.query.all()
+        return render_template('usuarios.html', usuarios=usuarios)
+    except Exception as e:
+        logger.error(f"Erro ao listar usuários: {e}")
+        flash('Erro ao carregar lista de usuários', 'error')
+        return redirect(url_for('index'))
+
+@app.route('/usuarios/adicionar', methods=['GET', 'POST'])
+def adicionar_usuario():
+    """Adiciona um novo usuário"""
+    if request.method == 'POST':
+        try:
+            nome = request.form['nome'].strip()
+            email = request.form['email'].strip()
+            telefone = request.form.get('telefone', '').strip()
+            
+            # Validações básicas
+            if not nome or len(nome) < 2:
+                flash('Nome deve ter pelo menos 2 caracteres', 'error')
+                return render_template('adicionar_usuario.html')
+            
+            if not email or '@' not in email:
+                flash('Email inválido', 'error')
+                return render_template('adicionar_usuario.html')
+            
+            # Verificar se email já existe
+            if Usuario.query.filter_by(email=email).first():
+                flash('Email já cadastrado no sistema', 'error')
+                return render_template('adicionar_usuario.html')
+            
+            novo_usuario = Usuario(
+                nome=nome,
+                email=email,
+                telefone=telefone
+            )
+            
+            db.session.add(novo_usuario)
+            db.session.commit()
+            
+            logger.info(f"Usuário adicionado: {nome}")
+            flash('Usuário adicionado com sucesso!', 'success')
+            return redirect(url_for('listar_usuarios'))
+            
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Erro ao adicionar usuário: {e}")
+            flash('Erro ao adicionar usuário', 'error')
+            return render_template('adicionar_usuario.html')
+    
+    return render_template('adicionar_usuario.html')
