@@ -229,7 +229,6 @@ def adicionar_usuario():
             email = request.form['email'].strip()
             telefone = request.form.get('telefone', '').strip()
             
-            # Validações básicas
             if not nome or len(nome) < 2:
                 flash('Nome deve ter pelo menos 2 caracteres', 'error')
                 return render_template('adicionar_usuario.html')
@@ -238,7 +237,6 @@ def adicionar_usuario():
                 flash('Email inválido', 'error')
                 return render_template('adicionar_usuario.html')
             
-            # Verificar se email já existe
             if Usuario.query.filter_by(email=email).first():
                 flash('Email já cadastrado no sistema', 'error')
                 return render_template('adicionar_usuario.html')
