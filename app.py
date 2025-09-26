@@ -22,3 +22,21 @@ def relatorios():
             }
             for row in livros_populares_rows
         ]
+
+        emprestimos_mensais = db.session.query(
+            db.func.strftime('%Y-%m', Emprestimo.data_emprestimo).label('mes'),
+            db.func.count(Emprestimo.id).label('total')
+        ).filter(
+            Emprestimo.data_emprestimo >= datetime.utcnow() - timedelta(days=180)
+        ).group_by('mes').order_by('mes').all()
+        
+        return render_template(
+            'relatorios.html',
+            estatisticas=estatisticas,
+            livros_populares=livros_populares,
+            emprestimos_mensais=emprestimos_mensais
+        )
+    except Exception as e:
+        logger.error(f"Erro ao gerar relatórios: {e}")
+        flash('Erro ao gerar relatórios', 'error')
+        return redirect(url_for('index'))
