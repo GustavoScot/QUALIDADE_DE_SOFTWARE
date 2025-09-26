@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Busca Avançada - Sistema de Biblioteca{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-search"></i> Busca Avançada
+        </h1>
+    </div>
+</div>
+
+<!-- Formulário de Busca -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter"></i> Filtros de Busca
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="q" class="form-label">Termo de Busca</label>
+                        <input type="text" class="form-control" id="q" name="q" 
+                               value="{{ termo }}" placeholder="Digite o termo de busca">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="tipo" class="form-label">Tipo de Busca</label>
+                        <select class="form-select" id="tipo" name="tipo">
+                            <option value="todos" {{ 'selected' if tipo == 'todos' else '' }}>
+                                Todos
+                            </option>
+                            <option value="livros" {{ 'selected' if tipo == 'livros' else '' }}>
+                                Apenas Livros
+                            </option>
+                            <option value="usuarios" {{ 'selected' if tipo == 'usuarios' else '' }}>
+                                Apenas Usuários
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="categoria" class="form-label">Categoria (Livros)</label>
+                        <select class="form-select" id="categoria" name="categoria">
+                            <option value="">Todas as categorias</option>
+                            {% for cat in categorias %}
+                            <option value="{{ cat }}" {{ 'selected' if cat == categoria else '' }}>
+                                {{ cat }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Filtros Adicionais para Livros -->
+                <div class="row mt-3" id="filtros-livros" style="display: {{ 'block' if tipo == 'livros' or tipo == 'todos' else 'none' }};">
+                    <div class="col-md-3">
+                        <label for="ano_min" class="form-label">Ano Mínimo</label>
+                        <input type="number" class="form-control" id="ano_min" name="ano_min" 
+                               value="{{ ano_min }}" min="1000" max="2024" placeholder="Ex: 2020">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="ano_max" class="form-label">Ano Máximo</label>
+                        <input type="number" class="form-control" id="ano_max" name="ano_max" 
+                               value="{{ ano_max }}" min="1000" max="2024" placeholder="Ex: 2024">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resultados da Busca -->
+{% if resultados %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list"></i> 
+                    Resultados da Busca
+                    <span class="badge bg-primary">{{ resultados|length }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for tipo_resultado, item in resultados %}
+                    {% if tipo_resultado == 'livro' %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-book text-primary"></i> 
+                                        {{ item.titulo }}
+                                    </h5>
+                                    <p class="card-text">
+                                        <strong>Autor:</strong> {{ item.autor }}<br>
+                                        <strong>ISBN:</strong> <code>{{ item.isbn }}</code><br>
+                                        <strong>Ano:</strong> {{ item.ano_publicacao }}<br>
+                                        <strong>Categoria:</strong> 
+                                        <span class="badge bg-secondary">{{ item.categoria }}</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="mb-2">
+                                        <span class="badge bg-{{ 'success' if item.quantidade_disponivel > 0 else 'danger' }}">
+                                            {{ item.quantidade_disponivel }}/{{ item.quantidade_total }} disponível{{ 'is' if item.quantidade_disponivel > 1 else '' }}
+                                        </span>
+                                    </div>
+                                    {% if item.quantidade_disponivel > 0 %}
+                                    <a href="{{ url_for('novo_emprestimo') }}?livro_id={{ item.id }}" 
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fas fa-exchange-alt"></i> Emprestar
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted">Indisponível</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif tipo_resultado == 'usuario' %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-user text-success"></i> 
+                                        {{ item.nome }}
+                                    </h5>
+                                    <p class="card-text">
+                                        <strong>Email:</strong> 
+                                        <a href="mailto:{{ item.email }}">{{ item.email }}</a><br>
+                                        {% if item.telefone %}
+                                        <strong>Telefone:</strong> {{ item.telefone }}<br>
+                                        {% endif %}
+                                        <strong>Cadastrado em:</strong> {{ item.data_cadastro.strftime('%d/%m/%Y') }}
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="mb-2">
+                                        {% set emprestimos_ativos = item.emprestimos|selectattr('status', 'equalto', 'ativo')|list %}
+                                        <span class="badge bg-{{ 'primary' if emprestimos_ativos|length > 0 else 'secondary' }}">
+                                            {{ emprestimos_ativos|length }} empréstimo{{ 's' if emprestimos_ativos|length != 1 else '' }} ativo{{ 's' if emprestimos_ativos|length != 1 else '' }}
+                                        </span>
+                                    </div>
+                                    <a href="{{ url_for('novo_emprestimo') }}?usuario_id={{ item.id }}" 
+                                       class="btn btn-success btn-sm">
+                                        <i class="fas fa-exchange-alt"></i> Novo Empréstimo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% elif termo %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Nenhum resultado encontrado</h5>
+                <p class="text-muted">
+                    Não foram encontrados resultados para "{{ termo }}" com os filtros aplicados.
+                </p>
+                <div class="mt-3">
+                    <button class="btn btn-outline-primary" onclick="limparFiltros()">
+                        <i class="fas fa-times"></i> Limpar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Busca Avançada</h5>
+                <p class="text-muted">
+                    Use os filtros acima para encontrar livros e usuários específicos.
+                </p>
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-book fa-2x text-primary mb-2"></i>
+                            <h6>Buscar Livros</h6>
+                            <p class="small text-muted">
+                                Por título, autor, ISBN, categoria ou ano de publicação
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-user fa-2x text-success mb-2"></i>
+                            <h6>Buscar Usuários</h6>
+                            <p class="small text-muted">
+                                Por nome ou email
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-filter fa-2x text-info mb-2"></i>
+                            <h6>Filtros Avançados</h6>
+                            <p class="small text-muted">
+                                Combine múltiplos critérios para uma busca precisa
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Mostrar/ocultar filtros de livros
+document.getElementById('tipo').addEventListener('change', function() {
+    const filtrosLivros = document.getElementById('filtros-livros');
+    if (this.value === 'livros' || this.value === 'todos') {
+        filtrosLivros.style.display = 'block';
+    } else {
+        filtrosLivros.style.display = 'none';
+    }
+});
+
+// Função para limpar filtros
+function limparFiltros() {
+    document.getElementById('q').value = '';
+    document.getElementById('tipo').value = 'todos';
+    document.getElementById('categoria').value = '';
+    document.getElementById('ano_min').value = '';
+    document.getElementById('ano_max').value = '';
+    document.getElementById('filtros-livros').style.display = 'block';
+}
+
+// Validação de anos
+document.getElementById('ano_min').addEventListener('input', function() {
+    const anoMin = parseInt(this.value);
+    const anoMax = parseInt(document.getElementById('ano_max').value);
+    
+    if (anoMin && anoMax && anoMin > anoMax) {
+        this.setCustomValidity('Ano mínimo não pode ser maior que o ano máximo');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+document.getElementById('ano_max').addEventListener('input', function() {
+    const anoMax = parseInt(this.value);
+    const anoMin = parseInt(document.getElementById('ano_min').value);
+    
+    if (anoMin && anoMax && anoMin > anoMax) {
+        this.setCustomValidity('Ano máximo não pode ser menor que o ano mínimo');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+</script>
+{% endblock %}
