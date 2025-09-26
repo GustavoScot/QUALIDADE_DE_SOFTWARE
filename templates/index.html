@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Início - Sistema de Biblioteca{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-book-open text-primary"></i> 
+            Sistema de Gerenciamento de Biblioteca
+        </h1>
+        <p class="lead text-muted">
+            Sistema completo de gerenciamento de biblioteca
+        </p>
+    </div>
+</div>
+
+{% if estatisticas %}
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card">
+            <div class="card-body text-center">
+                <i class="fas fa-book fa-2x mb-2"></i>
+                <div class="stats-number">{{ estatisticas.total_livros }}</div>
+                <div>Total de Livros</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <div class="stats-number">{{ estatisticas.total_usuarios }}</div>
+                <div>Usuários Cadastrados</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card">
+            <div class="card-body text-center">
+                <i class="fas fa-exchange-alt fa-2x mb-2"></i>
+                <div class="stats-number">{{ estatisticas.emprestimos_ativos }}</div>
+                <div>Empréstimos Ativos</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                <div class="stats-number">{{ estatisticas.emprestimos_atrasados }}</div>
+                <div>Empréstimos Atrasados</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="mb-3">Funcionalidades do Sistema</h2>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-plus-circle fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Cadastro de Livros</h5>
+                <p class="card-text">Gerencie o acervo da biblioteca com informações completas dos livros.</p>
+                <a href="{{ url_for('adicionar_livro') }}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Adicionar Livro
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-exchange-alt fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Sistema de Empréstimos</h5>
+                <p class="card-text">Controle completo de empréstimos e devoluções de livros.</p>
+                <a href="{{ url_for('novo_emprestimo') }}" class="btn btn-primary">
+                    <i class="fas fa-exchange-alt"></i> Novo Empréstimo
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-bar fa-3x text-info mb-3"></i>
+                <h5 class="card-title">Relatórios e Estatísticas</h5>
+                <p class="card-text">Visualize dados importantes sobre o uso da biblioteca.</p>
+                <a href="{{ url_for('relatorios') }}" class="btn btn-info">
+                    <i class="fas fa-chart-bar"></i> Ver Relatórios
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-search fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Busca Avançada</h5>
+                <p class="card-text">Encontre livros e usuários com filtros específicos.</p>
+                <a href="{{ url_for('busca_avancada') }}" class="btn btn-warning">
+                    <i class="fas fa-search"></i> Buscar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if livros_recentes %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-3">Livros Recentemente Adicionados</h2>
+        <div class="row">
+            {% for livro in livros_recentes %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ livro.titulo }}</h5>
+                        <p class="card-text">
+                            <strong>Autor:</strong> {{ livro.autor }}<br>
+                            <strong>Categoria:</strong> {{ livro.categoria }}<br>
+                            <strong>Ano:</strong> {{ livro.ano_publicacao }}<br>
+                            <strong>Disponível:</strong> {{ livro.quantidade_disponivel }}/{{ livro.quantidade_total }}
+                        </p>
+                        <span class="badge bg-{{ 'success' if livro.quantidade_disponivel > 0 else 'danger' }}">
+                            {{ 'Disponível' if livro.quantidade_disponivel > 0 else 'Indisponível' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
