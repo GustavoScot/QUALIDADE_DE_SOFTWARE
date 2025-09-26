@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Empréstimos - Sistema de Biblioteca{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-exchange-alt"></i> Gerenciamento de Empréstimos
+        </h1>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="todos" {{ 'selected' if status_selecionado == 'todos' else '' }}>
+                                Todos os Empréstimos
+                            </option>
+                            <option value="ativo" {{ 'selected' if status_selecionado == 'ativo' else '' }}>
+                                Empréstimos Ativos
+                            </option>
+                            <option value="devolvido" {{ 'selected' if status_selecionado == 'devolvido' else '' }}>
+                                Empréstimos Devolvidos
+                            </option>
+                            <option value="atrasado" {{ 'selected' if status_selecionado == 'atrasado' else '' }}>
+                                Empréstimos Atrasados
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-filter"></i> Filtrar
+                        </button>
+                        <a href="{{ url_for('listar_emprestimos') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Limpar
+                        </a>
+                    </div>
+                    <div class="col-md-5 d-flex align-items-end justify-content-end">
+                        <a href="{{ url_for('novo_emprestimo') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Novo Empréstimo
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
