@@ -180,3 +180,42 @@
 {% endblock %}
 
 {% block scripts %}
+
+<script>
+// Calcular data de devolução
+function calcularDataDevolucao() {
+    const dias = document.getElementById('dias_emprestimo').value;
+    const hoje = new Date();
+    const dataDevolucao = new Date(hoje.getTime() + (dias * 24 * 60 * 60 * 1000));
+    
+    const options = { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+    };
+    
+    document.getElementById('data_devolucao').innerHTML = 
+        '<i class="fas fa-calendar"></i> ' + dataDevolucao.toLocaleDateString('pt-BR', options);
+}
+
+// Event listeners
+document.getElementById('dias_emprestimo').addEventListener('change', calcularDataDevolucao);
+
+// Calcular data inicial
+calcularDataDevolucao();
+
+// Validação do formulário
+document.querySelector('form').addEventListener('submit', function(e) {
+    const usuario = document.getElementById('usuario_id').value;
+    const livro = document.getElementById('livro_id').value;
+    
+    if (!usuario || !livro) {
+        e.preventDefault();
+        alert('Por favor, selecione um usuário e um livro para o empréstimo.');
+        return false;
+    }
+    
+    return confirm('Confirmar criação do empréstimo?');
+});
+</script>
+{% endblock %}
