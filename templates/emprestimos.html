@@ -164,3 +164,49 @@
         </div>
     </div>
 </div>
+<!-- Estatísticas Rápidas -->
+{% if emprestimos %}
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-primary">
+                    {{ stats.ativos }}
+                </h5>
+                <p class="card-text">Empréstimos Ativos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-success">
+                    {{ stats.devolvidos }}
+                </h5>
+                <p class="card-text">Empréstimos Devolvidos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-danger">
+                    {{ stats.atrasados }}
+                </h5>
+                <p class="card-text">Empréstimos Atrasados</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-info">
+                    {{ stats.total }}
+                </h5>
+                <p class="card-text">Total de Empréstimos</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
