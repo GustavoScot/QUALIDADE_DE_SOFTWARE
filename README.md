@@ -4,6 +4,7 @@
 
 Este projeto implementa um **Sistema de Gerenciamento de Biblioteca** desenvolvido em Python com Flask, demonstrando as características da norma **ISO/IEC 25010** para qualidade de software. O sistema oferece funcionalidades completas para gerenciar livros, usuários, empréstimos e relatórios estatísticos.
 
+
 ## 🎯 Objetivos
 
 - Demonstrar implementação prática das características da ISO/IEC 25010
