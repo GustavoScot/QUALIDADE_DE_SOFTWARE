@@ -57,3 +57,108 @@ class Emprestimo(db.Model):
     
     def __repr__(self):
         return f'<Emprestimo {self.id}>'
+@app.route('/emprestimos')
+def listar_emprestimos():
+    """Lista todos os empréstimos - FUNCIONALIDADE 2"""
+    try:
+        status = request.args.get('status', 'todos')
+        query = Emprestimo.query
+        
+        if status != 'todos':
+            query = query.filter_by(status=status)
+        
+        emprestimos = query.order_by(Emprestimo.data_emprestimo.desc()).all()
+
+        # Enriquecer dados para o template sem usar timedelta no Jinja
+        agora_utc = datetime.utcnow()
+        emprestimos_view = []
+        total_ativos = 0
+        total_devolvidos = 0
+        total_atrasados = 0
+
+        for emp in emprestimos:
+            is_atrasado = (
+                emp.status == 'ativo'
+                and emp.data_devolucao_prevista is not None
+                and emp.data_devolucao_prevista < agora_utc
+            )
+            if emp.status == 'ativo':
+                total_ativos += 1
+                if is_atrasado:
+                    total_atrasados += 1
+            elif emp.status == 'devolvido':
+                total_devolvidos += 1
+
+            emprestimos_view.append({
+                'emprestimo': emp,
+                'is_atrasado': is_atrasado,
+            })
+
+        stats = {
+            'ativos': total_ativos,
+            'devolvidos': total_devolvidos,
+            'atrasados': total_atrasados,
+            'total': len(emprestimos)
+        }
+
+        return render_template(
+            'emprestimos.html',
+            emprestimos=emprestimos_view,
+            status_selecionado=status,
+            stats=stats
+        )
+    except Exception as e:
+        logger.error(f"Erro ao listar empréstimos: {e}")
+        flash('Erro ao carregar lista de empréstimos', 'error')
+        return redirect(url_for('index'))
+
+@app.route('/emprestimos/novo', methods=['GET', 'POST'])
+def novo_emprestimo():
+    """Cria um novo empréstimo"""
+    if request.method == 'POST':
+        try:
+            usuario_id = int(request.form['usuario_id'])
+            livro_id = int(request.form['livro_id'])
+            dias_emprestimo = int(request.form.get('dias_emprestimo', 14))
+            
+            # Verificar se livro está disponível
+            livro = Livro.query.get(livro_id)
+            if not livro or livro.quantidade_disponivel <= 0:
+                flash('Livro não disponível para empréstimo', 'error')
+                return redirect(url_for('novo_emprestimo'))
+            
+            # Verificar se usuário existe
+            usuario = Usuario.query.get(usuario_id)
+            if not usuario:
+                flash('Usuário não encontrado', 'error')
+                return redirect(url_for('novo_emprestimo'))
+            
+            # Criar empréstimo
+            data_devolucao = datetime.utcnow() + timedelta(days=dias_emprestimo)
+            novo_emprestimo = Emprestimo(
+                usuario_id=usuario_id,
+                livro_id=livro_id,
+                data_devolucao_prevista=data_devolucao
+            )
+            
+            # Atualizar quantidade disponível
+            livro.quantidade_disponivel -= 1
+            
+            db.session.add(novo_emprestimo)
+            db.session.commit()
+            
+            logger.info(f"Empréstimo criado: {livro.titulo} para {usuario.nome}")
+            flash('Empréstimo realizado com sucesso!', 'success')
+            return redirect(url_for('listar_emprestimos'))
+            
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Erro ao criar empréstimo: {e}")
+            flash('Erro ao criar empréstimo', 'error')
+            return redirect(url_for('novo_emprestimo'))
+    
+    usuarios = Usuario.query.all()
+    livros_disponiveis = Livro.query.filter(Livro.quantidade_disponivel > 0).all()
+    return render_template('novo_emprestimo.html', usuarios=usuarios, livros=livros_disponiveis)
+
+@app.route('/emprestimos/<int:emprestimo_id>/devolver', methods=['POST'])
