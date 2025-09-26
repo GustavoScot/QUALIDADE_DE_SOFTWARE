@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Erro Interno - Sistema de Biblioteca{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-exclamation-circle fa-5x text-danger mb-4"></i>
+            <h1 class="display-4">500</h1>
+            <h2 class="mb-4">Erro Interno do Servidor</h2>
+            <p class="lead text-muted mb-4">
+                Ocorreu um erro interno no servidor. Nossa equipe foi notificada e está trabalhando para resolver o problema.
+            </p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Voltar ao Início
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
