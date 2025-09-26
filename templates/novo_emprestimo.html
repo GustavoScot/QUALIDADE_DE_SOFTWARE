@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Empréstimo - Sistema de Biblioteca{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-exchange-alt"></i> Novo Empréstimo
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-book"></i> Dados do Empréstimo
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="usuario_id" class="form-label">
+                                Usuário <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="usuario_id" name="usuario_id" required>
+                                <option value="">Selecione um usuário</option>
+                                {% for usuario in usuarios %}
+                                <option value="{{ usuario.id }}" 
+                                        {{ 'selected' if request.args.get('usuario_id') == usuario.id|string else '' }}>
+                                    {{ usuario.nome }} ({{ usuario.email }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Usuário que irá emprestar o livro</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="livro_id" class="form-label">
+                                Livro <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="livro_id" name="livro_id" required>
+                                <option value="">Selecione um livro</option>
+                                {% for livro in livros %}
+                                <option value="{{ livro.id }}" 
+                                        {{ 'selected' if request.args.get('livro_id') == livro.id|string else '' }}>
+                                    {{ livro.titulo }} - {{ livro.autor }}
+                                    {% if livro.quantidade_disponivel > 0 %}
+                                        ({{ livro.quantidade_disponivel }} disponível{{ 'is' if livro.quantidade_disponivel > 1 else '' }})
+                                    {% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Livro a ser emprestado</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="dias_emprestimo" class="form-label">
+                                Período do Empréstimo
+                            </label>
+                            <select class="form-select" id="dias_emprestimo" name="dias_emprestimo">
+                                <option value="7">7 dias</option>
+                                <option value="14" selected>14 dias (padrão)</option>
+                                <option value="21">21 dias</option>
+                                <option value="30">30 dias</option>
+                            </select>
+                            <div class="form-text">Prazo para devolução</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Data de Devolução Prevista</label>
+                            <div class="form-control-plaintext" id="data_devolucao">
+                                <i class="fas fa-calendar"></i> Será calculada automaticamente
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('listar_emprestimos') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Voltar
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save"></i> Confirmar Empréstimo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Informações
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Regras do Empréstimo</h6>
+                <ul class="list-unstyled small">
+                    <li><i class="fas fa-check text-success"></i> Usuário deve estar cadastrado</li>
+                    <li><i class="fas fa-check text-success"></i> Livro deve estar disponível</li>
+                    <li><i class="fas fa-check text-success"></i> Prazo padrão: 14 dias</li>
+                    <li><i class="fas fa-check text-success"></i> Renovação automática possível</li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Status do Empréstimo</h6>
+                <div class="small">
+                    <div class="mb-2">
+                        <span class="badge bg-success">Ativo</span>
+                        <span class="text-muted">Livro emprestado</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-warning">Atrasado</span>
+                        <span class="text-muted">Prazo vencido</span>
+                    </div>
+                    <div>
+                        <span class="badge bg-secondary">Devolvido</span>
+                        <span class="text-muted">Livro retornado</span>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6>Funcionalidades</h6>
+                <div class="small">
+                    <div class="mb-2">
+                        <strong class="text-success">Empréstimos:</strong><br>
+                        Sistema completo de empréstimos
+                    </div>
+                    <div class="mb-2">
+                        <strong class="text-warning">Controle:</strong><br>
+                        Validações e controle de disponibilidade
+                    </div>
+                    <div>
+                        <strong class="text-info">Interface:</strong><br>
+                        Interface clara e intuitiva
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if not usuarios %}
+        <div class="card mt-3 border-warning">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                <h6 class="text-warning">Nenhum Usuário Cadastrado</h6>
+                <p class="small text-muted">É necessário ter usuários cadastrados para realizar empréstimos.</p>
+                <a href="{{ url_for('adicionar_usuario') }}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-plus"></i> Cadastrar Usuário
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if not livros %}
+        <div class="card mt-3 border-warning">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                <h6 class="text-warning">Nenhum Livro Disponível</h6>
+                <p class="small text-muted">É necessário ter livros cadastrados para realizar empréstimos.</p>
+                <a href="{{ url_for('adicionar_livro') }}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-plus"></i> Cadastrar Livro
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
