@@ -52,3 +52,115 @@
         </div>
     </div>
 </div>
+<!-- Lista de Empréstimos -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list"></i> 
+                    Lista de Empréstimos
+                    {% if status_selecionado != 'todos' %}
+                        <small class="text-muted">(Status: {{ status_selecionado.title() }})</small>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if emprestimos %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuário</th>
+                                <th>Livro</th>
+                                <th>Data Empréstimo</th>
+                                <th>Data Devolução</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in emprestimos %}
+                            {% set emprestimo = item.emprestimo %}
+                            <tr class="{{ 'table-warning' if item.is_atrasado else '' }}">
+                                <td>
+                                    <strong>#{{ emprestimo.id }}</strong>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>{{ emprestimo.usuario.nome }}</strong><br>
+                                        <small class="text-muted">{{ emprestimo.usuario.email }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>{{ emprestimo.livro.titulo }}</strong><br>
+                                        <small class="text-muted">{{ emprestimo.livro.autor }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    {{ emprestimo.data_emprestimo.strftime('%d/%m/%Y') }}
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>{{ emprestimo.data_devolucao_prevista.strftime('%d/%m/%Y') }}</strong>
+                                        {% if emprestimo.data_devolucao_real %}
+                                            <br><small class="text-success">
+                                                Devolvido: {{ emprestimo.data_devolucao_real.strftime('%d/%m/%Y') }}
+                                            </small>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if emprestimo.status == 'ativo' %}
+                                        {% if item.is_atrasado %}
+                                            <span class="badge bg-danger">Atrasado</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Ativo</span>
+                                        {% endif %}
+                                    {% elif emprestimo.status == 'devolvido' %}
+                                        <span class="badge bg-secondary">Devolvido</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">{{ emprestimo.status.title() }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if emprestimo.status == 'ativo' %}
+                                    <form method="POST" action="{{ url_for('devolver_livro', emprestimo_id=emprestimo.id) }}" 
+                                          style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-warning" 
+                                                onclick="return confirm('Confirmar devolução do livro?')"
+                                                title="Devolver Livro">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-exchange-alt fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhum empréstimo encontrado</h5>
+                    <p class="text-muted">
+                        {% if status_selecionado != 'todos' %}
+                            Não há empréstimos com o status selecionado.
+                        {% else %}
+                            Ainda não há empréstimos registrados no sistema.
+                        {% endif %}
+                    </p>
+                    <a href="{{ url_for('novo_emprestimo') }}" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Criar Primeiro Empréstimo
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
