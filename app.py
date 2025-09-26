@@ -162,3 +162,31 @@ def novo_emprestimo():
     return render_template('novo_emprestimo.html', usuarios=usuarios, livros=livros_disponiveis)
 
 @app.route('/emprestimos/<int:emprestimo_id>/devolver', methods=['POST'])
+
+def devolver_livro(emprestimo_id):
+    """Devolve um livro emprestado"""
+    try:
+        emprestimo = Emprestimo.query.get_or_404(emprestimo_id)
+        
+        if emprestimo.status != 'ativo':
+            flash('Empréstimo já foi devolvido', 'error')
+            return redirect(url_for('listar_emprestimos'))
+        
+        # Atualizar empréstimo
+        emprestimo.status = 'devolvido'
+        emprestimo.data_devolucao_real = datetime.utcnow()
+        
+        # Atualizar quantidade disponível do livro
+        emprestimo.livro.quantidade_disponivel += 1
+        
+        db.session.commit()
+        
+        logger.info(f"Livro devolvido: {emprestimo.livro.titulo}")
+        flash('Livro devolvido com sucesso!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Erro ao devolver livro: {e}")
+        flash('Erro ao devolver livro', 'error')
+    
+    return redirect(url_for('listar_emprestimos'))
