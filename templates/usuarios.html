@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Usuários - Sistema de Biblioteca{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-users"></i> Gerenciamento de Usuários
+        </h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <p class="text-muted mb-0">Gerencie os usuários cadastrados no sistema</p>
+            <a href="{{ url_for('adicionar_usuario') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Adicionar Usuário
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list"></i> Lista de Usuários
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if usuarios %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Data de Cadastro</th>
+                                <th>Empréstimos Ativos</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usuario in usuarios %}
+                            <tr>
+                                <td>
+                                    <strong>{{ usuario.nome }}</strong>
+                                </td>
+                                <td>
+                                    <a href="mailto:{{ usuario.email }}">{{ usuario.email }}</a>
+                                </td>
+                                <td>
+                                    {% if usuario.telefone %}
+                                        {{ usuario.telefone }}
+                                    {% else %}
+                                        <span class="text-muted">Não informado</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ usuario.data_cadastro.strftime('%d/%m/%Y') }}
+                                </td>
+                                <td>
+                                    {% set emprestimos_ativos = usuario.emprestimos|selectattr('status', 'equalto', 'ativo')|list %}
+                                    <span class="badge bg-{{ 'primary' if emprestimos_ativos|length > 0 else 'secondary' }}">
+                                        {{ emprestimos_ativos|length }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('novo_emprestimo') }}?usuario_id={{ usuario.id }}" 
+                                           class="btn btn-sm btn-primary" title="Novo Empréstimo">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhum usuário cadastrado</h5>
+                    <p class="text-muted">Comece adicionando o primeiro usuário ao sistema.</p>
+                    <a href="{{ url_for('adicionar_usuario') }}" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Adicionar Usuário
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
