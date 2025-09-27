@@ -396,7 +396,6 @@ def devolver_livro(emprestimo_id):
     
     return redirect(url_for('listar_emprestimos'))
 
-
 @app.route('/relatorios')
 def relatorios():
     """Página de relatórios - FUNCIONALIDADE 3"""
@@ -439,6 +438,8 @@ def relatorios():
         logger.error(f"Erro ao gerar relatórios: {e}")
         flash('Erro ao gerar relatórios', 'error')
         return redirect(url_for('index'))
+
+
 @app.route('/busca')
 def busca_avancada():
     """BUSCA AVANÇADA"""
@@ -449,9 +450,7 @@ def busca_avancada():
         ano_min = request.args.get('ano_min','')
         ano_max = request.args.get('ano_max','')
 
-
         resultados = []
-
 
         if termo:
             if tipo == 'livros' or tipo == 'todos':
@@ -481,8 +480,8 @@ def busca_avancada():
             if tipo == 'usuarios' or tipo == 'todos':
                 usuarios = Usuario.query.filter(
                     db.or_(
-                            Usuario.nome.contains(termo),
-                            Usuario.email.contains(termo)
+                        Usuario.nome.contains(termo),
+                        Usuario.email.contains(termo)
                     )
                 ).all()
                 resultados.extend([('usuario', usuario) for usuario in usuarios])
@@ -490,14 +489,16 @@ def busca_avancada():
         categorias = db.session.query(Livro.categoria).distinct().all()
         categorias = [cat[0] for cat in categorias]
 
-        return render_template('busca.html',
-                               resultados = resultados,
-                               categorias = categorias,
-                               termo = termo,
-                               tipo = tipo,
-                               categoria = categoria,
-                               ano_min = ano_min,
-                               ano_max = ano_max)
+        return render_template(
+            'busca.html',
+            resultados=resultados,
+            categorias=categorias,
+            termo=termo,
+            tipo=tipo,
+            categoria=categoria,
+            ano_min=ano_min,
+            ano_max=ano_max
+        )
 
     except Exception as e:
         logger.error(f"Erro na busca avançada: {e}")     
@@ -505,8 +506,48 @@ def busca_avancada():
         return redirect(url_for('index'))
 
 
+# Tratamento de erros e inicialização de Banco de dados ---
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html'), 404
 
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template('500.html'), 500
 
+def criar_tabelas():
+    """Cria as tabelas do banco de dados"""
+    with app.app_context():
+        db.create_all()
+        
+        if Livro.query.count() == 0:
+            livros_exemplo = [
+                Livro(titulo="Python para Iniciantes", autor="João Silva", 
+                      isbn="9781234567890", ano_publicacao=2023, categoria="Programação",
+                      quantidade_total=3, quantidade_disponivel=3),
+                Livro(titulo="Algoritmos e Estruturas de Dados", autor="Maria Santos", 
+                      isbn="9781234567891", ano_publicacao=2022, categoria="Programação",
+                      quantidade_total=2, quantidade_disponivel=2),
+                Livro(titulo="História do Brasil", autor="Pedro Oliveira", 
+                      isbn="9781234567892", ano_publicacao=2021, categoria="História",
+                      quantidade_total=1, quantidade_disponivel=1),
+            ]
+            
+            usuarios_exemplo = [
+                Usuario(nome="Ana Costa", email="ana@email.com", telefone="11999999999"),
+                Usuario(nome="Carlos Lima", email="carlos@email.com", telefone="11888888888"),
+            ]
+            
+            for livro in livros_exemplo:
+                db.session.add(livro)
+            
+            for usuario in usuarios_exemplo:
+                db.session.add(usuario)
+            
+            db.session.commit()
+            logger.info("Dados de exemplo adicionados ao banco")
 
-
-
+if __name__ == '__main__':
+    criar_tabelas()
+    app.run(debug=True, host='0.0.0.0', port=5000)
