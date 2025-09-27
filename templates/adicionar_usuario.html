@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Adicionar Usuário - Sistema de Biblioteca{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-user-plus"></i> Adicionar Novo Usuário
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user"></i> Informações do Usuário
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nome" class="form-label">
+                                Nome Completo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="nome" name="nome" 
+                                   required maxlength="100" placeholder="Digite o nome completo">
+                            <div class="form-text">Mínimo 2 caracteres</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">
+                                Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   required maxlength="120" placeholder="usuario@exemplo.com">
+                            <div class="form-text">Email válido e único no sistema</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="telefone" class="form-label">Telefone</label>
+                            <input type="tel" class="form-control" id="telefone" name="telefone" 
+                                   maxlength="20" placeholder="(11) 99999-9999">
+                            <div class="form-text">Campo opcional</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('listar_usuarios') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Voltar
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save"></i> Salvar Usuário
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Informações
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Campos Obrigatórios</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> Nome Completo</li>
+                    <li><i class="fas fa-check text-success"></i> Email</li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Validações</h6>
+                <ul class="list-unstyled small">
+                    <li><i class="fas fa-shield-alt text-warning"></i> Email único no sistema</li>
+                    <li><i class="fas fa-shield-alt text-warning"></i> Formato de email válido</li>
+                    <li><i class="fas fa-shield-alt text-warning"></i> Nome com tamanho mínimo</li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Funcionalidades</h6>
+                <div class="small">
+                    <div class="mb-2">
+                        <i class="fas fa-exchange-alt text-primary"></i>
+                        <strong>Empréstimos:</strong> Usuários podem emprestar livros
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-history text-info"></i>
+                        <strong>Histórico:</strong> Controle de empréstimos anteriores
+                    </div>
+                    <div>
+                        <i class="fas fa-chart-bar text-success"></i>
+                        <strong>Relatórios:</strong> Estatísticas de uso
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Validação em tempo real
+document.getElementById('nome').addEventListener('input', function() {
+    const nome = this.value.trim();
+    if (nome.length < 2 && nome.length > 0) {
+        this.setCustomValidity('Nome deve ter pelo menos 2 caracteres');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+document.getElementById('email').addEventListener('input', function() {
+    const email = this.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email.length > 0 && !emailRegex.test(email)) {
+        this.setCustomValidity('Digite um email válido');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+// Formatação de telefone
+document.getElementById('telefone').addEventListener('input', function() {
+    let value = this.value.replace(/\D/g, '');
+    if (value.length >= 11) {
+        value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+    } else if (value.length >= 7) {
+        value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+    } else if (value.length >= 3) {
+        value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+    }
+    this.value = value;
+});
+</script>
+{% endblock %}
