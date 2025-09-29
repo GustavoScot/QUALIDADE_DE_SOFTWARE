@@ -1,3 +1,7 @@
+{% extends "base.html" %}
+
+{% block title %}Adicionar Livro - Sistema de Biblioteca{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-12">
@@ -158,6 +162,7 @@
 
 {% block scripts %}
 <script>
+// Validação em tempo real
 document.getElementById('titulo').addEventListener('input', function() {
     const titulo = this.value.trim();
     if (titulo.length < 2 && titulo.length > 0) {
