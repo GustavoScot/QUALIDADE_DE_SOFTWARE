@@ -1,3 +1,7 @@
+{% extends "base.html" %}
+
+{% block title %}Adicionar Livro - Sistema de Biblioteca{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-12">
@@ -154,4 +158,44 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Validação em tempo real
+document.getElementById('titulo').addEventListener('input', function() {
+    const titulo = this.value.trim();
+    if (titulo.length < 2 && titulo.length > 0) {
+        this.setCustomValidity('Título deve ter pelo menos 2 caracteres');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+document.getElementById('autor').addEventListener('input', function() {
+    const autor = this.value.trim();
+    if (autor.length < 2 && autor.length > 0) {
+        this.setCustomValidity('Autor deve ter pelo menos 2 caracteres');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+document.getElementById('isbn').addEventListener('input', function() {
+    const isbn = this.value.trim();
+    if (isbn.length < 10 && isbn.length > 0) {
+        this.setCustomValidity('ISBN deve ter pelo menos 10 caracteres');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+document.getElementById('categoria').addEventListener('change', function() {
+    if (this.value === '') {
+        this.setCustomValidity('Selecione uma categoria');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+</script>
 {% endblock %}
