@@ -3,10 +3,13 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import os
 import logging
+from dotenv import load_dotenv
 from werkzeug.exceptions import BadRequest, InternalServerError
 
+load_dotenv()
+
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'sua-chave-secreta-aqui'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-only-insecure-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///biblioteca.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -547,6 +550,9 @@ def criar_tabelas():
             
             db.session.commit()
             logger.info("Dados de exemplo adicionados ao banco")
+
+from auth import auth_bp
+app.register_blueprint(auth_bp)
 
 if __name__ == '__main__':
     criar_tabelas()
