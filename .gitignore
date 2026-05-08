@@ -103,6 +103,7 @@ celerybeat.pid
 
 # Environments
 .env
+firebase-credentials.json
 .venv
 env/
 venv/
