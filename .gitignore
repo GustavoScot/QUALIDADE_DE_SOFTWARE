@@ -102,8 +102,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
-firebase-credentials.json
+firebase-credentials.json.bak
 .venv
 env/
 venv/
