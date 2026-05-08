@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
+from functools import wraps
 import os
 import logging
 from dotenv import load_dotenv
@@ -15,6 +16,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'user' not in session:
+            return redirect(url_for('auth.login'))
+        return f(*args, **kwargs)
+    return decorated
 
 db = SQLAlchemy(app)
 
@@ -112,6 +121,7 @@ def calcular_estatisticas():
         return None
     
 @app.route('/')
+@login_required
 def index():
     """Página inicial demonstrando USABILIDADE"""
     try:
@@ -126,6 +136,7 @@ def index():
         return render_template('index.html', estatisticas=None, livros_recentes=[])
     
 @app.route('/livros')
+@login_required
 def listar_livros():
     """Lista todos os livros com funcionalidade de busca"""
     try:
@@ -165,6 +176,7 @@ def listar_livros():
         return redirect(url_for('index'))
 
 @app.route('/livros/adicionar', methods=['GET', 'POST'])
+@login_required
 def adicionar_livro():
     """Adiciona um novo livro - FUNCIONALIDADE 1"""
     if request.method == 'POST':
@@ -213,6 +225,7 @@ def adicionar_livro():
     return render_template('adicionar_livro.html')
 
 @app.route('/usuarios')
+@login_required
 def listar_usuarios():
     """Lista todos os usuários"""
     try:
@@ -224,6 +237,7 @@ def listar_usuarios():
         return redirect(url_for('index'))
 
 @app.route('/usuarios/adicionar', methods=['GET', 'POST'])
+@login_required
 def adicionar_usuario():
     """Adiciona um novo usuário"""
     if request.method == 'POST':
@@ -266,6 +280,7 @@ def adicionar_usuario():
     return render_template('adicionar_usuario.html')
 
 @app.route('/emprestimos')
+@login_required
 def listar_emprestimos():
     """Lista todos os empréstimos - FUNCIONALIDADE 2"""
     try:
@@ -321,6 +336,7 @@ def listar_emprestimos():
         return redirect(url_for('index'))
 
 @app.route('/emprestimos/novo', methods=['GET', 'POST'])
+@login_required
 def novo_emprestimo():
     """Cria um novo empréstimo"""
     if request.method == 'POST':
@@ -370,7 +386,7 @@ def novo_emprestimo():
     return render_template('novo_emprestimo.html', usuarios=usuarios, livros=livros_disponiveis)
 
 @app.route('/emprestimos/<int:emprestimo_id>/devolver', methods=['POST'])
-
+@login_required
 def devolver_livro(emprestimo_id):
     """Devolve um livro emprestado"""
     try:
@@ -400,6 +416,7 @@ def devolver_livro(emprestimo_id):
     return redirect(url_for('listar_emprestimos'))
 
 @app.route('/relatorios')
+@login_required
 def relatorios():
     """Página de relatórios - FUNCIONALIDADE 3"""
     try:
@@ -444,6 +461,7 @@ def relatorios():
 
 
 @app.route('/busca')
+@login_required
 def busca_avancada():
     """BUSCA AVANÇADA"""
     try:
