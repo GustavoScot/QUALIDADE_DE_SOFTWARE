@@ -464,6 +464,7 @@ def relatorios():
 # Estes endpoints retornam dados em JSON para uso com Postman/APIs
 
 @app.route('/api/livros', methods=['GET'])
+@login_required
 def api_listar_livros():
     """API: Lista todos os livros em JSON"""
     try:
@@ -513,6 +514,7 @@ def api_listar_livros():
 
 
 @app.route('/api/usuarios', methods=['GET'])
+@login_required
 def api_listar_usuarios():
     """API: Lista todos os usuários em JSON"""
     try:
@@ -539,6 +541,7 @@ def api_listar_usuarios():
 
 
 @app.route('/api/usuarios/<int:usuario_id>', methods=['DELETE'])
+@login_required
 def api_deletar_usuario(usuario_id):
     """API: Deleta um usuário pelo ID"""
     try:
@@ -580,6 +583,7 @@ def api_deletar_usuario(usuario_id):
 
 
 @app.route('/api/livros/<int:livro_id>', methods=['PUT'])
+@login_required
 def api_atualizar_livro(livro_id):
     """API: Atualiza informações de um livro"""
     try:
