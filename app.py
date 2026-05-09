@@ -460,6 +460,230 @@ def relatorios():
         return redirect(url_for('index'))
 
 
+# ====== ENDPOINTS DE API (JSON) ======
+# Estes endpoints retornam dados em JSON para uso com Postman/APIs
+
+@app.route('/api/livros', methods=['GET'])
+def api_listar_livros():
+    """API: Lista todos os livros em JSON"""
+    try:
+        pagina = request.args.get('pagina', 1, type=int)
+        busca = request.args.get('busca', '')
+        categoria = request.args.get('categoria', '')
+        
+        query = Livro.query
+        
+        if busca:
+            query = query.filter(
+                db.or_(
+                    Livro.titulo.contains(busca),
+                    Livro.autor.contains(busca),
+                    Livro.isbn.contains(busca)
+                )
+            )
+        
+        if categoria:
+            query = query.filter(Livro.categoria == categoria)
+        
+        livros = query.paginate(page=pagina, per_page=10, error_out=False)
+        
+        return jsonify({
+            'status': 'sucesso',
+            'total': livros.total,
+            'pagina': pagina,
+            'paginas': livros.pages,
+            'livros': [
+                {
+                    'id': livro.id,
+                    'titulo': livro.titulo,
+                    'autor': livro.autor,
+                    'isbn': livro.isbn,
+                    'ano_publicacao': livro.ano_publicacao,
+                    'categoria': livro.categoria,
+                    'quantidade_total': livro.quantidade_total,
+                    'quantidade_disponivel': livro.quantidade_disponivel,
+                    'data_cadastro': livro.data_cadastro.isoformat() if livro.data_cadastro else None
+                }
+                for livro in livros.items
+            ]
+        }), 200
+    except Exception as e:
+        logger.error(f"Erro ao listar livros (API): {e}")
+        return jsonify({'status': 'erro', 'mensagem': str(e)}), 500
+
+
+@app.route('/api/usuarios', methods=['GET'])
+def api_listar_usuarios():
+    """API: Lista todos os usuários em JSON"""
+    try:
+        usuarios = Usuario.query.all()
+        
+        return jsonify({
+            'status': 'sucesso',
+            'total': len(usuarios),
+            'usuarios': [
+                {
+                    'id': usuario.id,
+                    'nome': usuario.nome,
+                    'email': usuario.email,
+                    'telefone': usuario.telefone,
+                    'data_cadastro': usuario.data_cadastro.isoformat() if usuario.data_cadastro else None,
+                    'total_emprestimos': len(usuario.emprestimos)
+                }
+                for usuario in usuarios
+            ]
+        }), 200
+    except Exception as e:
+        logger.error(f"Erro ao listar usuários (API): {e}")
+        return jsonify({'status': 'erro', 'mensagem': str(e)}), 500
+
+
+@app.route('/api/usuarios/<int:usuario_id>', methods=['DELETE'])
+def api_deletar_usuario(usuario_id):
+    """API: Deleta um usuário pelo ID"""
+    try:
+        usuario = Usuario.query.get(usuario_id)
+        
+        if not usuario:
+            return jsonify({
+                'status': 'erro',
+                'mensagem': f'Usuário com ID {usuario_id} não encontrado'
+            }), 404
+        
+        # Verificar se usuário tem empréstimos ativos
+        emprestimos_ativos = Emprestimo.query.filter_by(
+            usuario_id=usuario_id,
+            status='ativo'
+        ).count()
+        
+        if emprestimos_ativos > 0:
+            return jsonify({
+                'status': 'erro',
+                'mensagem': f'Não é possível deletar usuário com {emprestimos_ativos} empréstimo(s) ativo(s)'
+            }), 400
+        
+        # Deletar usuário
+        db.session.delete(usuario)
+        db.session.commit()
+        
+        logger.info(f"Usuário deletado: {usuario.nome} (ID: {usuario_id})")
+        
+        return jsonify({
+            'status': 'sucesso',
+            'mensagem': f'Usuário {usuario.nome} deletado com sucesso'
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Erro ao deletar usuário: {e}")
+        return jsonify({'status': 'erro', 'mensagem': str(e)}), 500
+
+
+@app.route('/api/livros/<int:livro_id>', methods=['PUT'])
+def api_atualizar_livro(livro_id):
+    """API: Atualiza informações de um livro"""
+    try:
+        livro = Livro.query.get(livro_id)
+        
+        if not livro:
+            return jsonify({
+                'status': 'erro',
+                'mensagem': f'Livro com ID {livro_id} não encontrado'
+            }), 404
+        
+        # Obter dados do body (JSON)
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                'status': 'erro',
+                'mensagem': 'Nenhum dado fornecido para atualização'
+            }), 400
+        
+        # Validar e atualizar título
+        if 'titulo' in data:
+            if len(data['titulo'].strip()) < 2:
+                return jsonify({
+                    'status': 'erro',
+                    'mensagem': 'Título deve ter pelo menos 2 caracteres'
+                }), 400
+            livro.titulo = data['titulo'].strip()
+        
+        # Validar e atualizar autor
+        if 'autor' in data:
+            if len(data['autor'].strip()) < 2:
+                return jsonify({
+                    'status': 'erro',
+                    'mensagem': 'Autor deve ter pelo menos 2 caracteres'
+                }), 400
+            livro.autor = data['autor'].strip()
+        
+        # Validar e atualizar categoria
+        if 'categoria' in data:
+            if len(data['categoria'].strip()) < 2:
+                return jsonify({
+                    'status': 'erro',
+                    'mensagem': 'Categoria deve ter pelo menos 2 caracteres'
+                }), 400
+            livro.categoria = data['categoria'].strip()
+        
+        # Atualizar ano se fornecido
+        if 'ano_publicacao' in data:
+            try:
+                ano = int(data['ano_publicacao'])
+                if ano < 1000 or ano > datetime.now().year:
+                    return jsonify({
+                        'status': 'erro',
+                        'mensagem': 'Ano de publicação inválido'
+                    }), 400
+                livro.ano_publicacao = ano
+            except ValueError:
+                return jsonify({
+                    'status': 'erro',
+                    'mensagem': 'Ano deve ser um número válido'
+                }), 400
+        
+        # Atualizar quantidade se fornecido
+        if 'quantidade_total' in data:
+            try:
+                quantidade = int(data['quantidade_total'])
+                if quantidade < 0:
+                    return jsonify({
+                        'status': 'erro',
+                        'mensagem': 'Quantidade não pode ser negativa'
+                    }), 400
+                livro.quantidade_total = quantidade
+            except ValueError:
+                return jsonify({
+                    'status': 'erro',
+                    'mensagem': 'Quantidade deve ser um número válido'
+                }), 400
+        
+        db.session.commit()
+        
+        logger.info(f"Livro atualizado: {livro.titulo} (ID: {livro_id})")
+        
+        return jsonify({
+            'status': 'sucesso',
+            'mensagem': f'Livro {livro.titulo} atualizado com sucesso',
+            'livro': {
+                'id': livro.id,
+                'titulo': livro.titulo,
+                'autor': livro.autor,
+                'isbn': livro.isbn,
+                'ano_publicacao': livro.ano_publicacao,
+                'categoria': livro.categoria,
+                'quantidade_total': livro.quantidade_total,
+                'quantidade_disponivel': livro.quantidade_disponivel
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Erro ao atualizar livro: {e}")
+        return jsonify({'status': 'erro', 'mensagem': str(e)}), 500
+
+
 @app.route('/busca')
 @login_required
 def busca_avancada():
