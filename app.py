@@ -800,6 +800,19 @@ def criar_tabelas():
 from auth import auth_bp
 app.register_blueprint(auth_bp)
 
+@app.route('/test-login')
+def test_login():
+    """Cria sessão autenticada sem Firebase. Apenas para testes."""
+    session['user'] = {
+        'uid':   'test-uid-123',
+        'email': 'admin@teste.com',
+        'name':  'Admin Teste',
+        'photo': '',
+    }
+    return 'OK', 200
+
 if __name__ == '__main__':
     criar_tabelas()
     app.run(debug=True, host='0.0.0.0', port=5000)
+
+# ── Rota auxiliar exclusiva para testes automatizados ──────
