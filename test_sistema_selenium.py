@@ -1,17 +1,10 @@
 """
-=============================================================
-TESTES DE SISTEMA COM SELENIUM
-Sistema de Gerenciamento de Biblioteca
-=============================================================
-
 Tipo de teste : TESTE DE SISTEMA
 Ferramenta    : Selenium WebDriver + pytest
 
-Como executar:
+Passo de execução:
     Terminal 1 → python app.py
     Terminal 2 → pytest test_sistema_selenium.py -v
-
-Integrante responsável: [SEU NOME AQUI]
 """
 
 import time
